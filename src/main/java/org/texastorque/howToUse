@@ -1,0 +1,17 @@
+This starts from something basic that works for sure, and then works its way up to a potentially 
+    working swerve drive.
+
+How to uncomment in order: 
+    - ctrl+f comments following the pattern of number_comment (ex: 1_comment) and uncomment those lines in 
+    numerical order or do as said in this file in that location in the code
+    - find the same comment in this file and see if it is doing/outputting what it is supposed to
+    - all pertinent lines are marked with the same comment for ease of access
+
+1_comment 
+    - smart dashboard should output the correct degree of the left joystick, pressing all the way up should
+    be 0, right should be 90, down should be 180, left should be 270
+    - if not working, the toBearing method needs to be modified so that it does work 
+    - potential problem: Math.atan2() and null values for x and y if translation in purely that direction
+
+2_comment
+    - 
