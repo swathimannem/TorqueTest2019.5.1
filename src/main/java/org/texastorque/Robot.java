@@ -78,8 +78,12 @@ public class Robot extends TorqueIterative {
 
 		NX_gyro = new AHRS(SPI.Port.kMXP);
 
-		this.rotationalPID = new ScheduledPID.Builder(setpoint, -.5, .5, 1)
-			.setPGains(0.02)
+		// initialize reset
+		DB_rot.reset();
+		NX_gyro.reset();
+
+		this.rotationalPID = new ScheduledPID.Builder(setpoint, -.8, .8, 1)
+			.setPGains(0.017)
 			// .setIGains(0)
 			// .setDGains(0)
 			.build();
@@ -95,8 +99,6 @@ public class Robot extends TorqueIterative {
 	
 	@Override
 	public void teleopInit() {
-		DB_rot.reset();
-		NX_gyro.reset();
 		rotMot.set(0);
 		transMot.set(0);
 	} // teleop start
@@ -125,7 +127,17 @@ public class Robot extends TorqueIterative {
 
 		// ----- calculations -----
 		resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, Math.abs(rotMag), 0);
-		
+		transTheta -= yaw;
+		if ((Math.abs(transTheta-encoderRotAngle) > 90) && (Math.abs(encoderRotAngle+transTheta) > 90)){
+			if(encoderRotAngle < 0){
+				transTheta+= 180;
+			}
+			else {
+				transTheta -= 180;
+			}
+			resultMag *= -1;
+		}
+
 		// ------ output --------
 		runRotationalPID();
 		rotMot.set(rotSpeed);
@@ -180,11 +192,12 @@ public class Robot extends TorqueIterative {
 	} // change value to a bearing
 
 	public void runRotationalPID(){
-		if (transTheta != 666){
+		if (transTheta <= 180 && transTheta >= -180){
 			setpoint = transTheta;
 		}
 		currentPos = encoderRotAngle;
 		if (setpoint != prevSetpoint){
+			SmartDashboard.putNumber("difference", Math.abs(setpoint-currentPos));
 			rotationalPID.changeSetpoint(setpoint);
 			prevSetpoint = setpoint;
 		}
