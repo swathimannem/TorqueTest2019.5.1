@@ -1,6 +1,7 @@
 // skeleton of Robot.java
 package org.texastorque;
 
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
@@ -107,6 +108,15 @@ public class Robot extends TorqueIterative {
 	private double transSpeed1 = 0;
 	private double transSpeed2 = 0;
 	private double transSpeed3 = 0;
+
+	private double transRotTempX0 = 0;
+	private double transRotTempX1 = 0;
+	private double transRotTempX2 = 0;
+	private double transRotTempX3 = 0;
+	private double transRotTempY0 = 0;
+	private double transRotTempY1 = 0;
+	private double transRotTempY2 = 0;
+	private double transRotTempY3 = 0;
 
 	public void robotInit() {
 		// module 0 - rotMot 0 - trans 1 - encoder 0,1
@@ -251,23 +261,60 @@ public class Robot extends TorqueIterative {
 		transTheta = toBearing(transThetaRaw);
 		// resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, Math.abs(rotMag), 0);
 		resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, 0, 0);
-		// transTheta -= yaw;
+		transTheta -= (yaw+76);
+		
+		if (rotMag > 0){
+			transRotTempX0 = transX + rotMag*Math.cos(Math.PI/4);
+			transRotTempY0 = transY + rotMag*Math.sin(Math.PI/4);
+			transTheta0 = Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0));
+			resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
 
-		if (rotMag < 0){
-			transTheta0 = transTheta + rotMag*135;
-			transTheta1 = transTheta + rotMag*45;
-			transTheta2 = transTheta - rotMag*45;
-			transTheta3 = transTheta - rotMag*135;
-		} else {
-			transTheta0 = transTheta + rotMag*45;
-			transTheta1 = transTheta + rotMag*135;
-			transTheta2 = transTheta - rotMag*135;
-			transTheta3 = transTheta - rotMag*45;
+			transRotTempX1 = transX + rotMag*Math.cos(Math.PI/4);
+			transRotTempY1 = transY - rotMag*Math.sin(Math.PI/4);
+			transTheta1 = Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1));
+			resultMag1 = -Math.hypot(transRotTempX1, transRotTempY1);
+			
+			transRotTempX2 = transX - rotMag*Math.cos(Math.PI/4);
+			transRotTempY2 = transY + rotMag*Math.sin(Math.PI/4);
+			transTheta2 = Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2));
+			resultMag2 = -Math.hypot(transRotTempX2, transRotTempY2);
+
+			transRotTempX3 = transX - rotMag*Math.cos(Math.PI/4);
+			transRotTempY3 = transY - rotMag*Math.sin(Math.PI/4);
+			transTheta3 = Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3));
+			resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
+		} else if (rotMag < 0){
+			transRotTempX0 = transX - rotMag*Math.cos(Math.PI/4);
+			transRotTempY0 = transY - rotMag*Math.sin(Math.PI/4);
+			transTheta0 = Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0));
+			resultMag0 = -Math.hypot(transRotTempX0, transRotTempY0);
+
+			transRotTempX1 = transX - rotMag*Math.cos(Math.PI/4);
+			transRotTempY1 = transY + rotMag*Math.sin(Math.PI/4);
+			transTheta1 = Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1));
+			resultMag1 = Math.hypot(transRotTempX1, transRotTempY1);
+			
+			transRotTempX2 = transX + rotMag*Math.cos(Math.PI/4);
+			transRotTempY2 = transY - rotMag*Math.sin(Math.PI/4);
+			transTheta2 = Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2));
+			resultMag2 = Math.hypot(transRotTempX2, transRotTempY2);
+
+			transRotTempX3 = transX + rotMag*Math.cos(Math.PI/4);
+			transRotTempY3 = transY + rotMag*Math.sin(Math.PI/4);
+			transTheta3 = Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3));
+			resultMag3 = -Math.hypot(transRotTempX3, transRotTempY3);
 		}
-		resultMag0 = resultMag;
-		resultMag1 = resultMag;
-		resultMag2 = resultMag;
-		resultMag3 = resultMag;
+		
+		if (rotMag == 0){ 
+			transTheta0 = transTheta;
+			transTheta1 = transTheta;
+			transTheta2 = transTheta;
+			transTheta3 = transTheta;
+			resultMag0 = resultMag;
+			resultMag1 = resultMag;
+			resultMag2 = resultMag;
+			resultMag3 = resultMag;
+		}
 		
 		if ((Math.abs(transTheta0-encoderRotAngle0) > 90) && (Math.abs(encoderRotAngle0+transTheta0) > 90)){
 			if(encoderRotAngle0 < 0){
@@ -308,6 +355,7 @@ public class Robot extends TorqueIterative {
 			}
 			resultMag3 *= -1;
 		} // least distance traveled / drive only displacement
+
 		// ------ output --------
 		runRotationalPID0();
 		runRotationalPID1();
@@ -359,24 +407,6 @@ public class Robot extends TorqueIterative {
 		smartDashboard();
 	} // run at all times when robot has power
 
-	public void smartDashboard(){
-		SmartDashboard.putNumber("Rotation Angle 0", encoderRotAngle0);
-		SmartDashboard.putNumber("Trans Speed 0", encoderTransSpeed0);
-		SmartDashboard.putNumber("Rotation Angle 0", encoderRotAngle0);
-		SmartDashboard.putNumber("Trans Speed 0", encoderTransSpeed0);
-		SmartDashboard.putNumber("Translation Theta0", transTheta0); // 1_comment
-		SmartDashboard.putNumber("Rotation Angle 1", encoderRotAngle1);
-		SmartDashboard.putNumber("Trans Speed 1", encoderTransSpeed1);
-		SmartDashboard.putNumber("Rotation Angle 1", encoderRotAngle1);
-		SmartDashboard.putNumber("Trans Speed 1", encoderTransSpeed1);
-		SmartDashboard.putNumber("Translation Theta1", transTheta1); // 1_comment
-		SmartDashboard.putNumber("TransMag", transMag);
-		SmartDashboard.putNumber("RotMag", rotMag);
-		SmartDashboard.putNumber("ResultMag0", resultMag0);
-		SmartDashboard.putNumber("RotSpeed0", rotSpeed0);
-		SmartDashboard.putNumber("Yaw", yaw);
-	} // put stuff to smart dashboard
-
 	// ------- METHODS TO USE IN STUFF ----------
 	public double toBearing(double angle) { // to use with input from controller // 1_comment
         double bearing = 0;
@@ -395,10 +425,11 @@ public class Robot extends TorqueIterative {
 	public void runRotationalPID0(){
 		if (transTheta0 <= 180 && transTheta0 >= -180){
 			setpoint0 = transTheta0;
+			SmartDashboard.putNumber("setpoint0", setpoint0);
 		}
 		currentPos0 = encoderRotAngle0;
 		if (setpoint0 != prevSetpoint0){
-			SmartDashboard.putNumber("difference", Math.abs(setpoint0-currentPos0));
+			SmartDashboard.putNumber("difference0", Math.abs(setpoint0-currentPos0));
 			rotationalPID0.changeSetpoint(setpoint0);
 			prevSetpoint0 = setpoint0;
 		}
@@ -408,10 +439,11 @@ public class Robot extends TorqueIterative {
 	public void runRotationalPID1(){
 		if (transTheta1 <= 180 && transTheta1 >= -180){
 			setpoint1 = transTheta1;
+			SmartDashboard.putNumber("setpoint1", setpoint1);
 		}
 		currentPos1 = encoderRotAngle1;
 		if (setpoint1 != prevSetpoint1){
-			SmartDashboard.putNumber("difference", Math.abs(setpoint1-currentPos1));
+			SmartDashboard.putNumber("difference1", Math.abs(setpoint1-currentPos1));
 			rotationalPID1.changeSetpoint(setpoint1);
 			prevSetpoint1 = setpoint1;
 		}
@@ -421,10 +453,11 @@ public class Robot extends TorqueIterative {
 	public void runRotationalPID2(){
 		if (transTheta2 <= 180 && transTheta2 >= -180){
 			setpoint2 = transTheta2;
+			SmartDashboard.putNumber("setpoint2", setpoint2);
 		}
 		currentPos2 = encoderRotAngle2;
 		if (setpoint2 != prevSetpoint2){
-			SmartDashboard.putNumber("difference", Math.abs(setpoint2-currentPos2));
+			SmartDashboard.putNumber("difference2", Math.abs(setpoint2-currentPos2));
 			rotationalPID2.changeSetpoint(setpoint2);
 			prevSetpoint2 = setpoint2;
 		}
@@ -434,13 +467,37 @@ public class Robot extends TorqueIterative {
 	public void runRotationalPID3(){
 		if (transTheta3 <= 180 && transTheta3 >= -180){
 			setpoint3 = transTheta3;
+			SmartDashboard.putNumber("setpoint3", setpoint3);
 		}
 		currentPos3 = encoderRotAngle3;
 		if (setpoint3 != prevSetpoint3){
-			SmartDashboard.putNumber("difference", Math.abs(setpoint3-currentPos3));
+			SmartDashboard.putNumber("difference3", Math.abs(setpoint3-currentPos3));
 			rotationalPID3.changeSetpoint(setpoint3);
 			prevSetpoint3 = setpoint3;
 		}
 		rotSpeed3 = rotationalPID3.calculate(currentPos3);
 	}
+
+	public void smartDashboard(){
+		SmartDashboard.putNumber("Rotation Angle 0", encoderRotAngle0);
+		SmartDashboard.putNumber("Trans Speed 0", encoderTransSpeed0);
+		SmartDashboard.putNumber("Rotation Angle 0", encoderRotAngle0);
+		SmartDashboard.putNumber("Trans Speed 0", encoderTransSpeed0);
+		SmartDashboard.putNumber("Translation Theta0", transTheta0); // 1_comment
+		SmartDashboard.putNumber("Rotation Angle 1", encoderRotAngle1);
+		SmartDashboard.putNumber("Trans Speed 1", encoderTransSpeed1);
+		SmartDashboard.putNumber("Rotation Angle 1", encoderRotAngle1);
+		SmartDashboard.putNumber("Trans Speed 1", encoderTransSpeed1);
+		SmartDashboard.putNumber("Translation Theta1", transTheta1); // 1_comment
+		SmartDashboard.putNumber("TransMag", transMag);
+		SmartDashboard.putNumber("RotMag", rotMag);
+		SmartDashboard.putNumber("ResultMag0", resultMag0);
+		SmartDashboard.putNumber("RotSpeed0", rotSpeed0);
+		SmartDashboard.putNumber("Yaw", yaw);
+		SmartDashboard.putNumber("encoder0", encoderRotAngle0);
+		SmartDashboard.putNumber("encoder1", encoderRotAngle1);
+		SmartDashboard.putNumber("encoder2", encoderRotAngle2);
+		SmartDashboard.putNumber("encoder3", encoderRotAngle3);
+	} // put stuff to smart dashboard
 } // Robot
+
