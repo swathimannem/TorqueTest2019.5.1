@@ -265,138 +265,114 @@ public class Robot extends TorqueIterative {
 
 		// ----- calculations -----
 		// transMag = Math.hypot(transX, transY); // square value // second
-		transThetaRaw = Math.toDegrees(Math.atan2(transY, transX));
-		double transThetaTemp = toBearing(transThetaRaw);
-		// resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, Math.abs(rotMag), 0);
-		resultMag = Math.hypot(transX, transY);//VectorUtils.vectorAddition2DMagnitude(transX, transY, 0, 0);
-		transTheta = transThetaTemp - (yaw);
+		// transThetaRaw = Math.toDegrees(Math.atan2(transY, transX));
+		// double transThetaTemp = toBearing(transThetaRaw);
+		// // resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, Math.abs(rotMag), 0);
+		// resultMag = Math.hypot(transX, transY);//VectorUtils.vectorAddition2DMagnitude(transX, transY, 0, 0);
+		// transTheta = transThetaTemp - (yaw);
 
 		s_c_45 = (Math.sin(Math.toRadians(45)));//Math.toDegrees(Math.sin(Math.toRadians(45)));
-		SmartDashboard.putNumber("transThetaTemp", transThetaTemp);
-		SmartDashboard.putNumber("transTheta", transTheta);
+		// SmartDashboard.putNumber("transThetaTemp", transThetaTemp);
+		// SmartDashboard.putNumber("transTheta", transTheta);
 
-		if (rotMag > 0 && (transY != 0 || transX != 0) && (transThetaTemp >= 0 && transThetaTemp <= 90)){ 
-			if (transThetaTemp >= 0 && transThetaTemp < 45){
-				// module 0 between 0 and 45 degrees bearing
-				transRotTempX0 = transX + rotMag*s_c_45;
-				transRotTempY0 = transY + rotMag*s_c_45;
-				resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
-				double thetaMid0 = Math.asin((rotMag/resultMag0)*Math.sin(Math.toRadians(135 + transThetaTemp)));
-				transTheta0 = toBearing(transTheta + thetaMid0);
+		double tempA = transX - rotMag*(s_c_45);
+		double tempB = transX + rotMag*(s_c_45);
+		double tempC = transY - rotMag*(s_c_45);
+		double tempD = transY + rotMag*(s_c_45);
 
-				// module 3 between 0 and 45 degrees bearing
-				transRotTempX3 = transX - rotMag*s_c_45;
-				transRotTempY3 = transY - rotMag*s_c_45;
-				resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
-				double thetaMid3 = Math.asin((rotMag/resultMag3)*Math.sin(Math.toRadians(45 - transThetaTemp)));
-				transTheta3 = toBearing(transTheta - thetaMid3);
-			} // for the first half of the first quadrant
-			else if (transThetaTemp > 45 && transThetaTemp <= 90){
-				// module 0 between 45 and 90 degrees bearing
-				transRotTempX0 = transX + rotMag*s_c_45;
-				transRotTempY0 = transY + rotMag*s_c_45;
-				resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
-				double thetaMid0 = Math.asin((rotMag/resultMag0)*Math.sin(Math.toRadians(225 - transThetaTemp)));
-				transTheta0 = toBearing(transTheta - thetaMid0);
+		resultMag0 = Math.hypot(tempB, tempD);
+		resultMag1 = Math.hypot(tempB, tempC);
+		resultMag2 = Math.hypot(tempA, tempD);
+		resultMag3 = Math.hypot(tempA, tempC);
 
-				// module 3 between 45 and 90 degrees bearing
-				transRotTempX3 = transX - rotMag*s_c_45;
-				transRotTempY3 = transY - rotMag*s_c_45;
-				resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
-				double thetaMid3 = Math.asin((rotMag/resultMag3)*Math.sin(Math.toRadians(transThetaTemp - 45)));
-				transTheta3 = toBearing(transTheta + thetaMid3);
-			} // for the second half of the first quadrant
-			else if (transThetaTemp == 45){
-				// module 0 at 45 degrees bearing
-				transRotTempX0 = transX + rotMag*s_c_45;
-				transRotTempY0 = transY + rotMag*s_c_45;
-				resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
-				transTheta0 = transTheta;
+		transTheta0 = toBearing(Math.atan2(tempC, tempB)*(180/Math.PI));
+		transTheta1 = toBearing(Math.atan2(tempD, tempB)*(180/Math.PI));
+		transTheta2 = toBearing(Math.atan2(tempD, tempA)*(180/Math.PI));
+		transTheta3 = toBearing(Math.atan2(tempC, tempA)*(180/Math.PI));
 
-				// module 3 at 45 degrees bearing
-				transRotTempX3 = transX - rotMag*s_c_45;
-				transRotTempY3 = transY - rotMag*s_c_45;
-				resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
-				transTheta3 = transTheta;
-			} // for the middle of the first quadrant
-
-			transRotTempX1 = transX + rotMag*s_c_45;
-			transRotTempY1 = transY - rotMag*s_c_45;
-			resultMag1 = Math.hypot(transRotTempX1, transRotTempY1);
-			double thetaMid1 = Math.asin((rotMag/resultMag1)*Math.sin(Math.toRadians(45 + transThetaTemp)));
-			transTheta1 = toBearing(transTheta + thetaMid1);
-
-			transRotTempX2 = transX - rotMag*s_c_45;
-			transRotTempY2 = transY + rotMag*s_c_45;
-			resultMag2 = Math.hypot(transRotTempX2, transRotTempY2);
-			double thetaMid2 = Math.asin((rotMag/resultMag2)*Math.sin(Math.toRadians(135-transThetaTemp)));
-			transTheta2 = toBearing(transTheta - thetaMid2);
-			
-			SmartDashboard.putNumber("transTheta0", transTheta0);
-			SmartDashboard.putNumber("transTheta1", transTheta1);
-			SmartDashboard.putNumber("transTheta2", transTheta2);
-			SmartDashboard.putNumber("transTheta3", transTheta3);
-			SmartDashboard.putNumber("resultMag0", resultMag0);
-			SmartDashboard.putNumber("resultMag1", resultMag1);
-			SmartDashboard.putNumber("resultMag2", resultMag2);
-			SmartDashboard.putNumber("resultMag3", resultMag3);
-		} else if (rotMag > 0 && transX == 0 && transY == 0){
-			transRotTempX0 = transX + rotMag*Math.cos(Math.PI/4);
-			transRotTempY0 = transY + rotMag*Math.sin(Math.PI/4);
-			transTheta0 = Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0));
-			resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
-
-			transRotTempX1 = transX + rotMag*Math.cos(Math.PI/4);
-			transRotTempY1 = transY - rotMag*Math.sin(Math.PI/4);
-			transTheta1 = Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1));
-			resultMag1 = -Math.hypot(transRotTempX1, transRotTempY1);
-			
-			transRotTempX2 = transX - rotMag*Math.cos(Math.PI/4);
-			transRotTempY2 = transY + rotMag*Math.sin(Math.PI/4);
-			transTheta2 = Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2));
-			resultMag2 = -Math.hypot(transRotTempX2, transRotTempY2);
-
-			transRotTempX3 = transX - rotMag*Math.cos(Math.PI/4);
-			transRotTempY3 = transY - rotMag*Math.sin(Math.PI/4);
-			transTheta3 = Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3));
-			resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
-		} else if (rotMag < 0 && transX == 0 && transY == 0){
-			transRotTempX0 = transX - rotMag*Math.cos(Math.PI/4);
-			transRotTempY0 = transY - rotMag*Math.sin(Math.PI/4);
-			transTheta0 = Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0));
-			resultMag0 = -Math.hypot(transRotTempX0, transRotTempY0);
-
-			transRotTempX1 = transX - rotMag*Math.cos(Math.PI/4);
-			transRotTempY1 = transY + rotMag*Math.sin(Math.PI/4);
-			transTheta1 = Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1));
-			resultMag1 = Math.hypot(transRotTempX1, transRotTempY1);
-			
-			transRotTempX2 = transX + rotMag*Math.cos(Math.PI/4);
-			transRotTempY2 = transY - rotMag*Math.sin(Math.PI/4);
-			transTheta2 = Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2));
-			resultMag2 = Math.hypot(transRotTempX2, transRotTempY2);
-
-			transRotTempX3 = transX + rotMag*Math.cos(Math.PI/4);
-			transRotTempY3 = transY + rotMag*Math.sin(Math.PI/4);
-			transTheta3 = Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3));
-			resultMag3 = -Math.hypot(transRotTempX3, transRotTempY3);
-			
-			SmartDashboard.putNumber("resultMag0", resultMag0);
-			SmartDashboard.putNumber("resultMag1", resultMag1);
-			SmartDashboard.putNumber("resultMag2", resultMag2);
-			SmartDashboard.putNumber("resultMag3", resultMag3);
+		double max = resultMag0;
+		if (resultMag1 > max) {
+			max = resultMag1;
 		}
+		if (resultMag2 > max) {
+			max = resultMag2;
+		}
+		if (resultMag3 > max) {
+			max = resultMag3;
+		}
+		if (max > 1){
+			resultMag0 /= max;
+			resultMag1 /= max;
+			resultMag2 /= max;
+			resultMag3 /= max;
+		}
+		// if (rotMag > 0 && (transY == 0 || transX == 0)){ 
+			
+		// 	SmartDashboard.putNumber("transTheta0", transTheta0);
+		// 	SmartDashboard.putNumber("transTheta1", transTheta1);
+		// 	SmartDashboard.putNumber("transTheta2", transTheta2);
+		// 	SmartDashboard.putNumber("transTheta3", transTheta3);
+		// 	SmartDashboard.putNumber("resultMag0", resultMag0);
+		// 	SmartDashboard.putNumber("resultMag1", resultMag1);
+		// 	SmartDashboard.putNumber("resultMag2", resultMag2);
+		// 	SmartDashboard.putNumber("resultMag3", resultMag3);
+		// } else if (rotMag > 0 && transX == 0 && transY == 0){
+		// 	transRotTempX0 = transX + rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY0 = transY + rotMag*Math.sin(Math.PI/4);
+		// 	transTheta0 = toBearing(Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0)));
+		// 	resultMag0 = Math.hypot(transRotTempX0, transRotTempY0);
+
+		// 	transRotTempX1 = transX + rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY1 = transY - rotMag*Math.sin(Math.PI/4);
+		// 	transTheta1 = toBearing(Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1)));
+		// 	resultMag1 = -Math.hypot(transRotTempX1, transRotTempY1);
+			
+		// 	transRotTempX2 = transX - rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY2 = transY + rotMag*Math.sin(Math.PI/4);
+		// 	transTheta2 = toBearing(Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2)));
+		// 	resultMag2 = -Math.hypot(transRotTempX2, transRotTempY2);
+
+		// 	transRotTempX3 = transX - rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY3 = transY - rotMag*Math.sin(Math.PI/4);
+		// 	transTheta3 = toBearing(Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3)));
+		// 	resultMag3 = Math.hypot(transRotTempX3, transRotTempY3);
+		// } else if (rotMag < 0 && transX == 0 && transY == 0){
+		// 	transRotTempX0 = transX - rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY0 = transY - rotMag*Math.sin(Math.PI/4);
+		// 	transTheta0 = Math.toDegrees(Math.atan2(transRotTempY0, transRotTempX0));
+		// 	resultMag0 = -Math.hypot(transRotTempX0, transRotTempY0);
+
+		// 	transRotTempX1 = transX - rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY1 = transY + rotMag*Math.sin(Math.PI/4);
+		// 	transTheta1 = Math.toDegrees(Math.atan2(transRotTempY1, transRotTempX1));
+		// 	resultMag1 = Math.hypot(transRotTempX1, transRotTempY1);
+			
+		// 	transRotTempX2 = transX + rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY2 = transY - rotMag*Math.sin(Math.PI/4);
+		// 	transTheta2 = Math.toDegrees(Math.atan2(transRotTempY2, transRotTempX2));
+		// 	resultMag2 = Math.hypot(transRotTempX2, transRotTempY2);
+
+		// 	transRotTempX3 = transX + rotMag*Math.cos(Math.PI/4);
+		// 	transRotTempY3 = transY + rotMag*Math.sin(Math.PI/4);
+		// 	transTheta3 = Math.toDegrees(Math.atan2(transRotTempY3, transRotTempX3));
+		// 	resultMag3 = -Math.hypot(transRotTempX3, transRotTempY3);
+			
+		// 	SmartDashboard.putNumber("resultMag0", resultMag0);
+		// 	SmartDashboard.putNumber("resultMag1", resultMag1);
+		// 	SmartDashboard.putNumber("resultMag2", resultMag2);
+		// 	SmartDashboard.putNumber("resultMag3", resultMag3);
+		// }
 		
-		if (rotMag == 0){ 
-			transTheta0 = transTheta;
-			transTheta1 = transTheta;
-			transTheta2 = transTheta;
-			transTheta3 = transTheta;
-			resultMag0 = resultMag;
-			resultMag1 = resultMag;
-			resultMag2 = resultMag;
-			resultMag3 = resultMag;
-		}
+		// if (rotMag == 0){ 
+		// 	transTheta0 = transTheta;
+		// 	transTheta1 = transTheta;
+		// 	transTheta2 = transTheta;
+		// 	transTheta3 = transTheta;
+		// 	resultMag0 = resultMag;
+		// 	resultMag1 = resultMag;
+		// 	resultMag2 = resultMag;
+		// 	resultMag3 = resultMag;
+		// }
 		
 //START TODAY
 		// diff0 = Math.abs(transTheta0 - encoderRotAngle0);
