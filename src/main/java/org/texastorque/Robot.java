@@ -285,10 +285,10 @@ public class Robot extends TorqueIterative {
 		resultMag2 = Math.hypot(tempA, tempD);
 		resultMag3 = Math.hypot(tempA, tempC);
 
-		transTheta0 = toBearing(Math.atan2(tempC, tempB)*(180/Math.PI));
-		transTheta1 = toBearing(Math.atan2(tempD, tempB)*(180/Math.PI));
-		transTheta2 = toBearing(Math.atan2(tempD, tempA)*(180/Math.PI));
-		transTheta3 = toBearing(Math.atan2(tempC, tempA)*(180/Math.PI));
+		transTheta0 = toBearing(Math.atan2(tempB, tempD));
+		transTheta1 = toBearing(Math.atan2(tempB, tempC));
+		transTheta2 = toBearing(Math.atan2(tempA, tempD));
+		transTheta3 = toBearing(Math.atan2(tempA, tempC));
 
 		double max = resultMag0;
 		if (resultMag1 > max) {
