@@ -259,7 +259,18 @@ public class Robot extends TorqueIterative {
 		transY = -driver.getLeftYAxis();
 		// rotMag = Math.abs(driver.getRightXAxis());
 		rotMag = driver.getRightXAxis();
+
+		double transYtemp = transY*Math.toDegrees(Math.cos(Math.toRadians(yaw))) + rotMag*Math.toDegrees(Math.sin(Math.toRadians(yaw)));
+		rotMag = -transY*Math.toDegrees(Math.sin(Math.toRadians(yaw))) + rotMag*Math.toDegrees(Math.cos(Math.toRadians(yaw)));
+		transY = transYtemp;
+
+		SmartDashboard.putNumber("temp", transYtemp);
+		SmartDashboard.putNumber("temp", transYtemp);
+		SmartDashboard.putNumber("temp", transYtemp);
 		
+		// transX = .5;
+		// transY = .5;
+		// rotMag = .5;
 		// ----- feedback -------
 		runEncoders();
 
@@ -274,21 +285,48 @@ public class Robot extends TorqueIterative {
 		s_c_45 = (Math.sin(Math.toRadians(45)));//Math.toDegrees(Math.sin(Math.toRadians(45)));
 		// SmartDashboard.putNumber("transThetaTemp", transThetaTemp);
 		// SmartDashboard.putNumber("transTheta", transTheta);
+		double tempR = Math.sqrt(2*Math.pow(21.5,2));
 
-		double tempA = transX - rotMag*(s_c_45);
-		double tempB = transX + rotMag*(s_c_45);
-		double tempC = transY - rotMag*(s_c_45);
-		double tempD = transY + rotMag*(s_c_45);
+		double tempA = transX - rotMag*(21.5/tempR);
+		double tempB = transX + rotMag*(21.5/tempR);
+		double tempC = transY - rotMag*(21.5/tempR);
+		double tempD = transY + rotMag*(21.5/tempR);
 
-		resultMag0 = Math.hypot(tempB, tempD);
-		resultMag1 = Math.hypot(tempB, tempC);
-		resultMag2 = Math.hypot(tempA, tempD);
-		resultMag3 = Math.hypot(tempA, tempC);
+		// resultMag0 = Math.hypot(tempB, tempD);
+		// resultMag1 = Math.hypot(tempB, tempC);
+		// resultMag2 = Math.hypot(tempA, tempD);
+		// resultMag3 = Math.hypot(tempA, tempC);
 
-		transTheta0 = toBearing(Math.atan2(tempB, tempD));
-		transTheta1 = toBearing(Math.atan2(tempB, tempC));
-		transTheta2 = toBearing(Math.atan2(tempA, tempD));
-		transTheta3 = toBearing(Math.atan2(tempA, tempC));
+		resultMag0 = Math.hypot(tempD, tempB);
+		resultMag1 = Math.hypot(tempC, tempB);
+		resultMag2 = Math.hypot(tempD, tempA);
+		resultMag3 = Math.hypot(tempC, tempA);
+
+		SmartDashboard.putNumber("ws1", resultMag1);
+		SmartDashboard.putNumber("ws2", resultMag0);
+		SmartDashboard.putNumber("ws3", resultMag2);
+		SmartDashboard.putNumber("ws4", resultMag3);
+
+		if (tempB == 0 && tempD == 0){
+			transTheta0 = 0;
+		} else{
+			transTheta0 = toBearing(Math.atan2(tempD, tempB)*180/Math.PI) - yaw;
+		}
+		if (tempB == 0 && tempC == 0){
+			transTheta1 = 0;
+		} else{
+			transTheta1 = toBearing(Math.atan2(tempC, tempB)*180/Math.PI) - yaw;
+		}
+		if (tempA == 0 && tempD == 0){
+			transTheta2 = 0;
+		} else {
+			transTheta2 = toBearing(Math.atan2(tempD, tempA)*180/Math.PI) - yaw;
+		}
+		if (tempA == 0 && tempC == 0){
+			transTheta3 = 0;
+		} else{
+			transTheta3 = toBearing(Math.atan2(tempC, tempA)*180/Math.PI) - yaw;
+		}
 
 		double max = resultMag0;
 		if (resultMag1 > max) {
@@ -306,6 +344,21 @@ public class Robot extends TorqueIterative {
 			resultMag2 /= max;
 			resultMag3 /= max;
 		}
+
+		SmartDashboard.putNumber("A", tempA);
+		SmartDashboard.putNumber("B", tempB);
+		SmartDashboard.putNumber("C", tempC);
+		SmartDashboard.putNumber("D", tempD);
+
+		SmartDashboard.putNumber("WS1", resultMag1);
+		SmartDashboard.putNumber("WS2", resultMag0);
+		SmartDashboard.putNumber("WS3", resultMag2);
+		SmartDashboard.putNumber("WS4", resultMag3);
+
+		SmartDashboard.putNumber("WA1", transTheta1);
+		SmartDashboard.putNumber("WA2", transTheta0);
+		SmartDashboard.putNumber("WA3", transTheta2);
+		SmartDashboard.putNumber("WA4", transTheta3);
 		// if (rotMag > 0 && (transY == 0 || transX == 0)){ 
 			
 		// 	SmartDashboard.putNumber("transTheta0", transTheta0);
@@ -474,14 +527,19 @@ public class Robot extends TorqueIterative {
 		runRotationalPID1();
 		runRotationalPID2();
 		runRotationalPID3();
-		rotMot0.set(rotSpeed0);
-		transMot0.set(-resultMag0);
-		rotMot1.set(rotSpeed1);
-		transMot1.set(-resultMag1);
-		rotMot2.set(rotSpeed2);
-		transMot2.set(-resultMag2);
-		rotMot3.set(rotSpeed3);
-		transMot3.set(-resultMag3);
+		// SmartDashboard.putNumber("WA1", transTheta1);
+		// SmartDashboard.putNumber("WA2", transTheta0);
+		// SmartDashboard.putNumber("WA3", transTheta2);
+		// SmartDashboard.putNumber("WA4", transTheta3);
+
+		// rotMot0.set(rotSpeed0);
+		// transMot0.set(-resultMag0);
+		// rotMot1.set(rotSpeed1);
+		// transMot1.set(-resultMag1);
+		// rotMot2.set(rotSpeed2);
+		// transMot2.set(-resultMag2);
+		// rotMot3.set(rotSpeed3);
+		// transMot3.set(-resultMag3);
 	} // run at all times in state teleop
 
   public void runEncoders(){
@@ -524,9 +582,9 @@ public class Robot extends TorqueIterative {
 	public double toBearing(double angle) { // to use with input from controller // 1_comment
         double bearing = 0;
 		angle = angle % 360;
-		if (transX == 0 && transY == 0){
-			// return 1477;
-			return 0;
+		if (transX == 0 && transY == 0 && rotMag == 0){
+			return 1477;
+			// return 0;
 		} 
 		if ((angle <= 180 && angle >= 0 ) || (angle < 0 && angle >= -90)) {
 			bearing = 90 - angle;
