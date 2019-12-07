@@ -264,9 +264,9 @@ public class Robot extends TorqueIterative {
 		rotMag = -transY*Math.toDegrees(Math.sin(Math.toRadians(yaw))) + rotMag*Math.toDegrees(Math.cos(Math.toRadians(yaw)));
 		transY = transYtemp;
 
-		SmartDashboard.putNumber("temp", transYtemp);
-		SmartDashboard.putNumber("temp", transYtemp);
-		SmartDashboard.putNumber("temp", transYtemp);
+		// SmartDashboard.putNumber("temp", transYtemp);
+		// SmartDashboard.putNumber("temp", transYtemp);
+		// SmartDashboard.putNumber("temp", transYtemp);
 		
 		// transX = .5;
 		// transY = .5;
@@ -281,6 +281,12 @@ public class Robot extends TorqueIterative {
 		// // resultMag = VectorUtils.vectorAddition2DMagnitude(transX, transY, Math.abs(rotMag), 0);
 		// resultMag = Math.hypot(transX, transY);//VectorUtils.vectorAddition2DMagnitude(transX, transY, 0, 0);
 		// transTheta = transThetaTemp - (yaw);
+		boolean isOnlyTranslating;
+		if (rotMag == 0){
+			isOnlyTranslating = true;
+		} else{
+			isOnlyTranslating = false;
+		}
 
 		s_c_45 = (Math.sin(Math.toRadians(45)));//Math.toDegrees(Math.sin(Math.toRadians(45)));
 		// SmartDashboard.putNumber("transThetaTemp", transThetaTemp);
@@ -310,22 +316,46 @@ public class Robot extends TorqueIterative {
 		if (tempB == 0 && tempD == 0){
 			transTheta0 = 0;
 		} else{
-			transTheta0 = toBearing(Math.atan2(tempD, tempB)*180/Math.PI) - yaw;
+			// transTheta0 = toBearing(Math.atan2(tempD, tempB)*180/Math.PI);
+			// transTheta0 = Math.atan2(tempD, tempB)*180/Math.PI;
+			if (isOnlyTranslating){
+				transTheta0 = toBearing(Math.atan2(tempD, tempB)*180/Math.PI);
+			} else{
+				transTheta0 = Math.atan2(tempB, tempD)*180/Math.PI;
+			}
 		}
 		if (tempB == 0 && tempC == 0){
 			transTheta1 = 0;
 		} else{
-			transTheta1 = toBearing(Math.atan2(tempC, tempB)*180/Math.PI) - yaw;
+			// transTheta1 = toBearing(Math.atan2(tempC, tempB)*180/Math.PI);
+			// transTheta1 = Math.atan2(tempC, tempB)*180/Math.PI;
+			if (isOnlyTranslating){
+				transTheta1 = toBearing(Math.atan2(tempC, tempB)*180/Math.PI);
+			} else{
+				transTheta1 = Math.atan2(tempB, tempC)*180/Math.PI;
+			}
 		}
 		if (tempA == 0 && tempD == 0){
 			transTheta2 = 0;
 		} else {
-			transTheta2 = toBearing(Math.atan2(tempD, tempA)*180/Math.PI) - yaw;
+			// transTheta2 = toBearing(Math.atan2(tempD, tempA)*180/Math.PI);
+			// transTheta2 = Math.atan2(tempD, tempA)*180/Math.PI;
+			if (isOnlyTranslating){
+				transTheta2 = toBearing(Math.atan2(tempD, tempA)*180/Math.PI);
+			} else{
+				transTheta2 = Math.atan2(tempA, tempD)*180/Math.PI;
+			}
 		}
 		if (tempA == 0 && tempC == 0){
 			transTheta3 = 0;
 		} else{
-			transTheta3 = toBearing(Math.atan2(tempC, tempA)*180/Math.PI) - yaw;
+			// transTheta3 = toBearing(Math.atan2(tempC, tempA)*180/Math.PI);
+			// transTheta3 = Math.atan2(tempC, tempA)*180/Math.PI;
+			if (isOnlyTranslating){
+				transTheta3 = toBearing(Math.atan2(tempC, tempA)*180/Math.PI);
+			} else{
+				transTheta3 = Math.atan2(tempA, tempC)*180/Math.PI;
+			}
 		}
 
 		double max = resultMag0;
@@ -527,19 +557,19 @@ public class Robot extends TorqueIterative {
 		runRotationalPID1();
 		runRotationalPID2();
 		runRotationalPID3();
-		// SmartDashboard.putNumber("WA1", transTheta1);
-		// SmartDashboard.putNumber("WA2", transTheta0);
-		// SmartDashboard.putNumber("WA3", transTheta2);
-		// SmartDashboard.putNumber("WA4", transTheta3);
+		SmartDashboard.putNumber("WA1", transTheta1);
+		SmartDashboard.putNumber("WA2", transTheta0);
+		SmartDashboard.putNumber("WA3", transTheta2);
+		SmartDashboard.putNumber("WA4", transTheta3);
 
-		// rotMot0.set(rotSpeed0);
-		// transMot0.set(-resultMag0);
-		// rotMot1.set(rotSpeed1);
-		// transMot1.set(-resultMag1);
-		// rotMot2.set(rotSpeed2);
-		// transMot2.set(-resultMag2);
-		// rotMot3.set(rotSpeed3);
-		// transMot3.set(-resultMag3);
+		rotMot0.set(rotSpeed0);
+		transMot0.set(-resultMag0);
+		rotMot1.set(rotSpeed1);
+		transMot1.set(-resultMag1);
+		rotMot2.set(rotSpeed2);
+		transMot2.set(-resultMag2);
+		rotMot3.set(rotSpeed3);
+		transMot3.set(-resultMag3);
 	} // run at all times in state teleop
 
   public void runEncoders(){
