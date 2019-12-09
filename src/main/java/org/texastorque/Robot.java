@@ -278,6 +278,8 @@ public class Robot extends TorqueIterative {
 		runEncoders();
 
 		// ----- calculations -----
+		translation.yawOffset(yaw);
+		
 		vector0 = translation.addVectorDirections(rotation, 1, 1);
 		resultMag0 = vector0.getMag();
 		transTheta0 = toBearing(vector0.getTheta());

@@ -37,7 +37,7 @@ public class Vector {
 
     public void yawOffset(double yawOffset){
         makePolar();
-        polarTheta -= yawOffset;
+        polarTheta += yawOffset;
         vectorX = polarR*Math.toDegrees(Math.cos(Math.toRadians(polarTheta)));
         vectorY = polarR*Math.toDegrees(Math.sin(Math.toRadians(polarTheta)));
         makePolar();
