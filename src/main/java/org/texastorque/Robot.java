@@ -9,6 +9,9 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.EncoderType;
 
 import java.lang.Thread;
+
+import javax.swing.tree.AbstractLayoutCache.NodeDimensions;
+
 import org.texastorque.torquelib.base.TorqueIterative;
 import org.texastorque.torquelib.component.TorqueEncoder;
 import org.texastorque.torquelib.component.TorqueMotor;
@@ -31,8 +34,6 @@ public class Robot extends TorqueIterative {
   	GenericController driver = new GenericController(0, 0.1);
   
 	private AHRS NX_gyro;
-	private double pitch = 0;
-	private double roll = 0;
 	private double yaw = 0;
 	  
 	private ScheduledPID rotationalPID0; // MAKE THIS FINAL IN THE ACTUAL THING
@@ -68,8 +69,6 @@ public class Robot extends TorqueIterative {
 	private TorqueMotor rotMot3;
 	private CANSparkMax transMot3;
 
-	private Talon talonTest;
-
 	private TorqueEncoder DB_rot0;
 	private CANEncoder DB_trans0;
 	private TorqueEncoder DB_rot1;
@@ -80,19 +79,13 @@ public class Robot extends TorqueIterative {
 	private CANEncoder DB_trans3;
 
 	private double encoderRotAngle0 = 0;
-	private double encoderTransSpeed0 = 0;
 	private double encoderRotAngle1 = 0;
-	private double encoderTransSpeed1 = 0;
 	private double encoderRotAngle2 = 0;
-	private double encoderTransSpeed2 = 0;
 	private double encoderRotAngle3 = 0;
-	private double encoderTransSpeed3 = 0;
 
 	private double transX = 0;
 	private double transY = 0;
 	private double transMag = 0;
-	private double transThetaRaw = 0;
-	private double transTheta = 0;
 
 	private double transTheta0 = 0;
 	private double transTheta1 = 0;
@@ -107,28 +100,10 @@ public class Robot extends TorqueIterative {
 	
 	private double rotMagSplit;
 
-	private double resultMag = 0;
-
-	private double diff0 = 0;
-	private double diff1 = 0;
-	private double diff2 = 0;
-	private double diff3 = 0;
-
-	private double s_c_45;
-
-	private double transSpeed0 = 0;
-	private double transSpeed1 = 0;
-	private double transSpeed2 = 0;
-	private double transSpeed3 = 0;
-
-	private double transRotTempX0 = 0;
-	private double transRotTempX1 = 0;
-	private double transRotTempX2 = 0;
-	private double transRotTempX3 = 0;
-	private double transRotTempY0 = 0;
-	private double transRotTempY1 = 0;
-	private double transRotTempY2 = 0;
-	private double transRotTempY3 = 0;
+	private double dtheta0 = 0;
+	private double dtheta1 = 0;
+	private double dtheta2 = 0;
+	private double dtheta3 = 0;
 
 	private Vector translation;
 	private Vector rotation;
@@ -139,7 +114,6 @@ public class Robot extends TorqueIterative {
 	private Vector vector3;
 
 	public void robotInit() {
-		talonTest = new Talon(10);
 
 		// module 0 - rotMot 0 - trans 1 - encoder 0,1
 		// module 1 - rotMot 1 - trans 2 - encoder 2,3
@@ -242,6 +216,7 @@ public class Robot extends TorqueIterative {
 	
 	@Override
 	public void teleopInit() {
+		// talonTest.set(0);
 		rotMot0.set(0);
 		transMot0.set(0);
 		rotMot1.set(0);
@@ -262,14 +237,14 @@ public class Robot extends TorqueIterative {
 
 	@Override
 	public void disabledInit() {
-		rotMot0.set(0);
-		transMot0.set(0);
-		rotMot1.set(0);
-		transMot1.set(0);
-		rotMot2.set(0);
-		transMot2.set(0);
-		rotMot3.set(0);
-		transMot3.set(0);
+		// rotMot0.set(0);
+		// transMot0.set(0);
+		// rotMot1.set(0);
+		// transMot1.set(0);
+		// rotMot2.set(0);
+		// transMot2.set(0);
+		// rotMot3.set(0);
+		// transMot3.set(0);
 	} // disabled robot
 
 	@Override
@@ -286,7 +261,7 @@ public class Robot extends TorqueIterative {
 
 	@Override
 	public void teleopContinuous() {
-		// talonTest.set(.2);
+		// talonTest.set(driver.getLeftXAxis()*.3);
 
 		SmartDashboard.putBoolean("Is Calibrating", NX_gyro.isCalibrating());
 
@@ -331,45 +306,41 @@ public class Robot extends TorqueIterative {
 			resultMag2 /= max;
 			resultMag3 /= max;
 		} // if there is a translational output of more than one, scale them all back to the maximum equalling one
-
-		// diff0 = Math.abs(Math.abs(transTheta0) - Math.abs(encoderRotAngle0));
-		// diff1 = Math.abs(Math.abs(transTheta1) - Math.abs(encoderRotAngle1));
-		// diff2 = Math.abs(Math.abs(transTheta2) - Math.abs(encoderRotAngle2));
-		// diff3 = Math.abs(Math.abs(transTheta3) - Math.abs(encoderRotAngle3));
 		
-		// // plots to the smaller path for travel, and flips direction of wheel spin
-		// if (diff0 > 90){
-		// 	resultMag0 *= -1;
-		// 	if (transTheta0 > 0){
-		// 		transTheta0 -= 180;
-		// 	} else {
-		// 		transTheta0 += 180;
-		// 	}
-		// }
-		// if (diff1 > 90){
-		// 	resultMag1 *= -1;
-		// 	if (transTheta1 > 0){
-		// 		transTheta1 -= 180;
-		// 	} else {
-		// 		transTheta1 += 180;
-		// 	}
-		// }
-		// if (diff2 > 90){
-		// 	resultMag2 *= -1;
-		// 	if (transTheta2 > 0){
-		// 		transTheta2 -= 180;
-		// 	} else {
-		// 		transTheta2 += 180;
-		// 	}
-		// }
-		// if (diff3 > 90){
-		// 	resultMag3 *= -1;
-		// 	if (transTheta3 > 0){
-		// 		transTheta3 -= 180;
-		// 	} else {
-		// 		transTheta3 += 180;
-		// 	}
-		// }
+		// plots to the smaller path for travel, and flips direction of wheel spin
+		if (needOptimization(encoderRotAngle0, transTheta0)){
+			resultMag0 *= -1;
+			if (transTheta0 > 0){
+				transTheta0 -= 180;
+			} else {
+				transTheta0 += 180;
+			}
+		}
+		if (needOptimization(encoderRotAngle1, transTheta1)){
+			resultMag1 *= -1;
+			if (transTheta1 > 0){
+				transTheta1 -= 180;
+			} else {
+				transTheta1 += 180;
+			}
+		}
+		if (needOptimization(encoderRotAngle2, transTheta2)){
+			resultMag2 *= -1;
+			if (transTheta2 > 0){
+				transTheta2 -= 180;
+			} else {
+				transTheta2 += 180;
+			}
+		}
+		if (needOptimization(encoderRotAngle3, transTheta3)){
+			resultMag3 *= -1;
+			if (transTheta3 > 0){
+				transTheta3 -= 180;
+			} else {
+				transTheta3 += 180;
+			}
+		}
+
 		// ------ output --------
 		runRotationalPID0();
 		runRotationalPID1();
@@ -378,31 +349,29 @@ public class Robot extends TorqueIterative {
 
 
 		rotMot0.set(rotSpeed0);
-		transMot0.set(-resultMag0);
+		transMot0.set(-resultMag0/2);
 		rotMot1.set(rotSpeed1);
-		transMot1.set(-resultMag1);
+		transMot1.set(-resultMag1/2);
 		rotMot2.set(rotSpeed2);
-		transMot2.set(-resultMag2);
+		transMot2.set(-resultMag2/2);
 		rotMot3.set(rotSpeed3);
-		transMot3.set(-resultMag3);
+		transMot3.set(-resultMag3/2);
 	} // run at all times in state teleop
 
   public void runEncoders(){
     DB_rot0.calc();
     encoderRotAngle0 = DB_rot0.get()/8.5; // EXPERIMENTALLY DERIVED!!! NEED TO GET A MORE ACCURATE ONE
-	encoderTransSpeed0 = DB_trans0.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
+	// encoderTransSpeed0 = DB_trans0.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
 	DB_rot1.calc();
     encoderRotAngle1 = DB_rot1.get()/8.5; // EXPERIMENTALLY DERIVED!!! NEED TO GET A MORE ACCURATE ONE
-	encoderTransSpeed1 = DB_trans1.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
+	// encoderTransSpeed1 = DB_trans1.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
 	DB_rot2.calc();
     encoderRotAngle2 = DB_rot2.get()/8.5; // EXPERIMENTALLY DERIVED!!! NEED TO GET A MORE ACCURATE ONE
-	encoderTransSpeed2 = DB_trans2.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
+	// encoderTransSpeed2 = DB_trans2.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
 	DB_rot3.calc();
     encoderRotAngle3 = DB_rot3.get()/8.5; // EXPERIMENTALLY DERIVED!!! NEED TO GET A MORE ACCURATE ONE
-	encoderTransSpeed3 = DB_trans3.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
+	// encoderTransSpeed3 = DB_trans3.getVelocity()*0.225; // NEED TO CHANGE (POTENTIALLY) COULD BE WRONG
 
-	pitch = NX_gyro.getPitch();
-	roll = NX_gyro.getRoll();
 	yaw = NX_gyro.getYaw();
   } // calculate encoder turn 
 
@@ -438,6 +407,36 @@ public class Robot extends TorqueIterative {
 		}
         return bearing;
 	} // change value to a bearing
+
+	public boolean needOptimization(double encoderRotAngle, double transTheta){
+		double dtheta = 0;
+		if (encoderRotAngle >= -180 && encoderRotAngle < -90){ // Quadrant 3
+			dtheta = encoderRotAngle + 90;
+			if (-dtheta < transTheta && transTheta < (180 - dtheta)){
+				return true;
+			}
+			return false;
+		} else if (encoderRotAngle >= -90 && encoderRotAngle < 0) { // Quadrant 2
+			dtheta = -encoderRotAngle;
+			if (((90 - dtheta) < transTheta && transTheta < 180) || ((-90-dtheta) > dtheta && dtheta > -180)) {
+				return true;
+			}
+			return false;
+		} else if (encoderRotAngle >= 0 && encoderRotAngle < 90){ // Quadrant 1
+			dtheta = encoderRotAngle;
+			if ((-180 < transTheta && transTheta < (-90+dtheta)) || ((90+dtheta) < transTheta && transTheta < 180) ) {
+				return true;
+			}
+			return false;
+		} else if (encoderRotAngle >= 90 && encoderRotAngle <=180) {// Quadrant 4
+			dtheta = 180 - dtheta;
+			if (((-90-dtheta) < transTheta && transTheta < 0) || (0 < transTheta && transTheta < (90-dtheta))){
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
 
 	public void runRotationalPID0(){
 		if (transTheta0 <= 180 && transTheta0 >= -180){
